@@ -181,11 +181,12 @@ class CusIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(padding: EdgeInsets.only(left: 5,right: 5,top: 15),child: 
-    GestureDetector(
-      onTap: () => onTap(),
-      child: Image.asset(url, width: 25, height: 25),
-    ),)
-    ;
+    return Padding(
+      padding: EdgeInsets.only(left: 5, right: 5, top: 15),
+      child: GestureDetector(
+        onTap: () => onTap(),
+        child: Image.asset(url, width: 25, height: 25),
+      ),
+    );
   }
 }

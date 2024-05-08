@@ -7,6 +7,7 @@ import 'package:image_card/image_card.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:top_snackbar_flutter/custom_snack_bar.dart';
 import 'package:top_snackbar_flutter/top_snack_bar.dart';
+import 'package:url_launcher/link.dart';
 
 class AccountDetails extends StatefulWidget {
   final idA;
@@ -19,7 +20,6 @@ class AccountDetails extends StatefulWidget {
 class _AccountDetailsState extends State<AccountDetails> {
   ScrollController verticalController = ScrollController();
 
-//"https://github.com/vingan0710"
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -28,6 +28,55 @@ class _AccountDetailsState extends State<AccountDetails> {
           future: APIServices().fetchAccountDetails(widget.idA),
           builder: (context, snapshot) {
             if (snapshot.hasData) {
+              var num1 = snapshot.data!.follower;
+              var num2 = snapshot.data!.like;
+              var num3 = snapshot.data!.support;
+              String k_m_b_generator_num1(num1) {
+                if (num1 > 999 && num1 < 99999) {
+                  return "${(num1 / 1000).toStringAsFixed(1)} K";
+                } else if (num1 > 99999 && num1 < 999999) {
+                  return "${(num1 / 1000).toStringAsFixed(0)} K";
+                } else if (num1 > 999999 && num1 < 999999999) {
+                  return "${(num1 / 1000000).toStringAsFixed(1)} M";
+                } else if (num1 > 999999999) {
+                  return "${(num1 / 1000000000).toStringAsFixed(1)} B";
+                } else {
+                  return num1.toString();
+                }
+              }
+
+              String k_m_b_generator_num2(num2) {
+                if (num2 > 999 && num2 < 99999) {
+                  return "${(num2 / 1000).toStringAsFixed(1)} K";
+                } else if (num2 > 99999 && num2 < 999999) {
+                  return "${(num2 / 1000).toStringAsFixed(0)} K";
+                } else if (num2 > 999999 && num2 < 999999999) {
+                  return "${(num2 / 1000000).toStringAsFixed(1)} M";
+                } else if (num2 > 999999999) {
+                  return "${(num2 / 1000000000).toStringAsFixed(1)} B";
+                } else {
+                  return num2.toString();
+                }
+              }
+
+              String k_m_b_generator_num3(num3) {
+                if (num3 > 999 && num3 < 99999) {
+                  return "${(num3 / 1000).toStringAsFixed(1)} K";
+                } else if (num3 > 99999 && num3 < 999999) {
+                  return "${(num3 / 1000).toStringAsFixed(0)} K";
+                } else if (num3 > 999999 && num3 < 999999999) {
+                  return "${(num3 / 1000000).toStringAsFixed(1)} M";
+                } else if (num3 > 999999999) {
+                  return "${(num3 / 1000000000).toStringAsFixed(1)} B";
+                } else {
+                  return num3.toString();
+                }
+              }
+
+              var follower = k_m_b_generator_num1(num1);
+              var like = k_m_b_generator_num1(num2);
+              var support = k_m_b_generator_num1(num3);
+
               return Positioned.fill(
                   child: SingleChildScrollView(
                 controller: verticalController,
@@ -45,7 +94,7 @@ class _AccountDetailsState extends State<AccountDetails> {
                           CircleAvatar(
                               radius: 78,
                               backgroundColor:
-                                  Color.fromARGB(255, 255, 111, 15),
+                                  const Color.fromARGB(255, 255, 111, 15),
                               child: snapshot.data!.avt == null
                                   ? const CircleAvatar(
                                       backgroundImage: NetworkImage(
@@ -58,15 +107,15 @@ class _AccountDetailsState extends State<AccountDetails> {
                                       radius: 75,
                                     )),
                           Padding(
-                              padding: EdgeInsets.only(top: 15),
+                              padding: const EdgeInsets.only(top: 15),
                               child: Text('${snapshot.data!.name}',
                                   style: const TextStyle(
                                       fontSize: 22,
                                       fontWeight: FontWeight.bold))),
                           Padding(
-                            padding: EdgeInsets.only(bottom: 2),
+                            padding: const EdgeInsets.only(bottom: 2),
                             child: Text('@${snapshot.data!.username}',
-                                style: TextStyle(
+                                style: const TextStyle(
                                     fontSize: 15, color: Colors.grey)),
                           ),
                           // ignore: unrelated_type_equality_checks
@@ -96,11 +145,11 @@ class _AccountDetailsState extends State<AccountDetails> {
                                   showTopSnackBar(
                                     Overlay.of(context),
                                     CustomSnackBar.info(
-                                      backgroundColor:
-                                          Color.fromARGB(255, 246, 178, 0),
+                                      backgroundColor: const Color.fromARGB(
+                                          255, 246, 178, 0),
                                       icon: Image.asset(
                                           'images/assets/icon/1266877.png',
-                                          color: Color(0x15000000)),
+                                          color: const Color(0x15000000)),
                                       message:
                                           'The account has not yet set this information.',
                                     ),
@@ -113,11 +162,11 @@ class _AccountDetailsState extends State<AccountDetails> {
                                   showTopSnackBar(
                                     Overlay.of(context),
                                     CustomSnackBar.info(
-                                      backgroundColor:
-                                          Color.fromARGB(255, 246, 178, 0),
+                                      backgroundColor: const Color.fromARGB(
+                                          255, 246, 178, 0),
                                       icon: Image.asset(
                                           'images/assets/icon/1266877.png',
-                                          color: Color(0x15000000)),
+                                          color: const Color(0x15000000)),
                                       message:
                                           'The account has not yet set this information.',
                                     ),
@@ -125,19 +174,32 @@ class _AccountDetailsState extends State<AccountDetails> {
                                 },
                                 url:
                                     'images/assets/icon/4202011_email_gmail_mail_logo_social_icon.png'),
-                            CusIconButton(
-                                onTap: () {},
-                                url: 'images/assets/icon/website.png'),
+                            Link(
+                              uri: Uri.parse('https://github.com/vingan0710/'),
+                              builder: (context, followLink) {
+                                return InkWell(
+                                    onTap: followLink,
+                                    child: Padding(
+                                        padding: const EdgeInsets.only(
+                                            left: 5, right: 5, top: 15),
+                                        child: Image.asset(
+                                          'images/assets/icon/website.png',
+                                          width: 25,
+                                          height: 25,
+                                          fit: BoxFit.cover,
+                                        )));
+                              },
+                            ),
                             CusIconButton(
                                 onTap: () {
                                   showTopSnackBar(
                                     Overlay.of(context),
                                     CustomSnackBar.info(
-                                      backgroundColor:
-                                          Color.fromARGB(255, 246, 178, 0),
+                                      backgroundColor: const Color.fromARGB(
+                                          255, 246, 178, 0),
                                       icon: Image.asset(
                                           'images/assets/icon/1266877.png',
-                                          color: Color(0x15000000)),
+                                          color: const Color(0x15000000)),
                                       message:
                                           'The account has not yet set this information.',
                                     ),
@@ -150,11 +212,11 @@ class _AccountDetailsState extends State<AccountDetails> {
                                   showTopSnackBar(
                                     Overlay.of(context),
                                     CustomSnackBar.info(
-                                      backgroundColor:
-                                          Color.fromARGB(255, 246, 178, 0),
+                                      backgroundColor: const Color.fromARGB(
+                                          255, 246, 178, 0),
                                       icon: Image.asset(
                                           'images/assets/icon/1266877.png',
-                                          color: Color(0x15000000)),
+                                          color: const Color(0x15000000)),
                                       message:
                                           'The account has not yet set this information.',
                                     ),
@@ -167,11 +229,11 @@ class _AccountDetailsState extends State<AccountDetails> {
                                   showTopSnackBar(
                                     Overlay.of(context),
                                     CustomSnackBar.info(
-                                      backgroundColor:
-                                          Color.fromARGB(255, 246, 178, 0),
+                                      backgroundColor: const Color.fromARGB(
+                                          255, 246, 178, 0),
                                       icon: Image.asset(
                                           'images/assets/icon/1266877.png',
-                                          color: Color(0x15000000)),
+                                          color: const Color(0x15000000)),
                                       message:
                                           'The account has not yet set this information.',
                                     ),
@@ -184,26 +246,38 @@ class _AccountDetailsState extends State<AccountDetails> {
                       )
                     ]),
                   ),
-                  Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                    Container(
-                        color: Colors.grey.shade300, width: 70, height: 1.5),
-                    Padding(
-                        padding: const EdgeInsets.only(left: 15, right: 15),
-                        child: Image.asset(
-                            'images/assets/icon/inverted-commas.png',
-                            width: 20,
-                            height: 20)),
-                    Container(
-                        color: Colors.grey.shade300, width: 70, height: 1.5),
-                  ]),
-                  Container(
-                      alignment: Alignment.center,
-                      padding: const EdgeInsets.all(15),
-                      child: const Text(
-                        "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.black54, fontSize: 15),
-                      )),
+                  snapshot.data!.description != null
+                      ? Column(children: [
+                          Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Container(
+                                    color: Colors.grey.shade300,
+                                    width: 70,
+                                    height: 1.5),
+                                Padding(
+                                    padding: const EdgeInsets.only(
+                                        left: 15, right: 15),
+                                    child: Image.asset(
+                                        'images/assets/icon/inverted-commas.png',
+                                        width: 20,
+                                        height: 20)),
+                                Container(
+                                    color: Colors.grey.shade300,
+                                    width: 70,
+                                    height: 1.5),
+                              ]),
+                          Container(
+                              alignment: Alignment.center,
+                              padding: const EdgeInsets.all(15),
+                              child: Text(
+                                "${snapshot.data!.description}",
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                    color: Colors.black54, fontSize: 15),
+                              )),
+                        ])
+                      : const Column(),
                   Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                     NormalButton(
                         text: 'Follow',
@@ -289,37 +363,37 @@ class _AccountDetailsState extends State<AccountDetails> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: [
-                              const Column(children: [
-                                Text('4,02 N',
-                                    style: TextStyle(
+                              Column(children: [
+                                Text(follower,
+                                    style: const TextStyle(
                                         fontSize: 20,
                                         fontWeight: FontWeight.bold)),
-                                SizedBox(height: 3),
-                                Text('Followers',
+                                const SizedBox(height: 3),
+                                const Text('Followers',
                                     style: TextStyle(
                                         fontSize: 15, color: Colors.black54))
                               ]),
                               VerticalDivider(
-                                  color: Colors.grey.shade300, width: 55),
-                              const Column(children: [
-                                Text('1,95 N',
-                                    style: TextStyle(
+                                  color: Colors.grey.shade300, width: 45),
+                              Column(children: [
+                                Text(like,
+                                    style: const TextStyle(
                                         fontSize: 20,
                                         fontWeight: FontWeight.bold)),
-                                SizedBox(height: 3),
-                                Text('Favorites',
+                                const SizedBox(height: 3),
+                                const Text('Favorites',
                                     style: TextStyle(
                                         fontSize: 15, color: Colors.black54))
                               ]),
                               VerticalDivider(
-                                  color: Colors.grey.shade300, width: 55),
-                              const Column(children: [
-                                Text('64,5 N',
-                                    style: TextStyle(
+                                  color: Colors.grey.shade300, width: 45),
+                              Column(children: [
+                                Text(support,
+                                    style: const TextStyle(
                                         fontSize: 20,
                                         fontWeight: FontWeight.bold)),
-                                SizedBox(height: 3),
-                                Text('Supports',
+                                const SizedBox(height: 3),
+                                const Text('Supports',
                                     style: TextStyle(
                                         fontSize: 15, color: Colors.black54))
                               ]),
