@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:GiveAID/API/api_services.dart';
 import 'package:GiveAID/Models/account.dart';
+import 'package:GiveAID/Models/organization.dart';
 import 'package:GiveAID/src/Account/accountdetails.dart';
 import 'package:GiveAID/src/Account/allaccount.dart';
 import 'package:GiveAID/src/Account/notableorganization.dart';
@@ -16,6 +17,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_image_slideshow/flutter_image_slideshow.dart';
 import 'package:image_card/image_card.dart';
+import 'package:intl/intl.dart';
 import 'package:lazy_load_scrollview/lazy_load_scrollview.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:readmore/readmore.dart';
@@ -31,7 +33,7 @@ class MyHttpOverrides extends HttpOverrides {
 
 void main() {
   HttpOverrides.global = MyHttpOverrides();
-  runApp(new MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -121,7 +123,7 @@ class _MyHomePageState extends State<MyHomePage> {
           IconButton(
               onPressed: () {
                 Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => SearchPage()));
+                    MaterialPageRoute(builder: (context) => const SearchPage()));
               },
               icon: const Icon(
                 Icons.search,
@@ -129,8 +131,12 @@ class _MyHomePageState extends State<MyHomePage> {
               )),
           IconButton(
               onPressed: () => _dialogLogin(context),
-              icon: Image.asset('images/assets/icon/avatar.webp',
-                  width: 35, height: 35))
+              icon: Image.asset(
+                'images/assets/icon/avatar.webp',
+                width: 35,
+                height: 35,
+                color: Colors.grey,
+              ))
         ],
       ),
       body: LazyLoadScrollView(
@@ -170,9 +176,10 @@ class _MyHomePageState extends State<MyHomePage> {
                             ))
                       ],
                     )),
-                SizedBox(
+                Container(
                   width: double.infinity,
                   height: 90,
+                  padding: const EdgeInsets.only(right: 12),
                   child: LazyLoadScrollView(
                     isLoading: isLoadingHorizontal,
                     scrollDirection: Axis.horizontal,
@@ -191,28 +198,30 @@ class _MyHomePageState extends State<MyHomePage> {
                                 itemCount: accList!.length,
                                 itemBuilder: (BuildContext context, int index) {
                                   return Padding(
-                                      padding: EdgeInsets.only(left: 12),
+                                      padding: const EdgeInsets.only(left: 12),
                                       child: Column(children: [
                                         GestureDetector(
-                                          onTap: () {
-                                            Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                    builder: (context) =>
-                                                        AccountDetails(idA : accList[index].id)));
-                                          },
-                                          child: accList[index].avt == null ?
-                                          const CircleAvatar(
-                                            backgroundImage: NetworkImage(
-                                                'https://www.logolynx.com/images/logolynx/b4/b4ef8b89b08d503b37f526bca624c19a.jpeg'),
-                                            radius: 30,
-                                          ) : CircleAvatar(
-                                            backgroundImage: NetworkImage(
-                                                '${accList[index].avt}'),
-                                            radius: 30,
-                                          )
-                                          //,
-                                        ),
+                                            onTap: () {
+                                              Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          AccountDetails(
+                                                              idA:
+                                                                  accList[index]
+                                                                      .id)));
+                                            },
+                                            child: accList[index].avt == null
+                                                ? const CircleAvatar(
+                                                    backgroundImage: NetworkImage(
+                                                        'https://www.logolynx.com/images/logolynx/b4/b4ef8b89b08d503b37f526bca624c19a.jpeg'),
+                                                    radius: 30,
+                                                  )
+                                                : CircleAvatar(
+                                                    backgroundImage: NetworkImage(
+                                                        '${accList[index].avt}'),
+                                                    radius: 30,
+                                                  )),
                                         Container(
                                             padding:
                                                 const EdgeInsets.only(top: 5),
@@ -220,7 +229,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                             child: Text(
                                               '${accList[index].name}',
                                               overflow: TextOverflow.ellipsis,
-                                              style: TextStyle(fontSize: 15),
+                                              style: const TextStyle(fontSize: 15),
                                             ))
                                       ]));
                                 });
@@ -268,12 +277,41 @@ class _MyHomePageState extends State<MyHomePage> {
                             ))
                       ],
                     )),
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Wrap(
-                      direction: Axis.horizontal,
-                      children: List.generate(
-                          10, (index) => const CardOutstanding())),
+                Container(
+                  width: double.infinity,
+                  height: 320,
+                  padding: const EdgeInsets.only(right: 12),
+                  child: LazyLoadScrollView(
+                    isLoading: isLoadingHorizontal,
+                    scrollDirection: Axis.horizontal,
+                    onEndOfPage: () => _loadMoreHorizontal(),
+                    child: Scrollbar(
+                      thickness: 0,
+                      child: FutureBuilder<List<Organization>>(
+                        future: APIServices().fetchOrganizationOutstanding(),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData) {
+                            List<Organization>? outList = snapshot.data;
+                            return ListView.builder(
+                                // shrinkWrap: true,
+                                scrollDirection: Axis.horizontal,
+                                // physics: const NeverScrollableScrollPhysics(),
+                                itemCount: outList!.length,
+                                itemBuilder: (BuildContext context, int index) {
+                                  return CardOutstanding(out: outList[index]);
+                                });
+                          } else if (snapshot.hasError) {
+                            return Text('${snapshot.error}');
+                          }
+                          return Center(
+                              child: LoadingAnimationWidget.threeArchedCircle(
+                            color: Colors.blue.shade300,
+                            size: 45,
+                          ));
+                        },
+                      ),
+                    ),
+                  ),
                 ),
                 Divider(
                     color: Colors.grey.shade300, thickness: 5.5, height: 30),
@@ -303,7 +341,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                     context,
                                     MaterialPageRoute(
                                         builder: (context) =>
-                                            NotableOrgazation()));
+                                            const NotableOrgazation()));
                               },
                               child: const Text(
                                 'View All',
@@ -338,11 +376,24 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
+// ignore: must_be_immutable
 class CardOutstanding extends StatelessWidget {
-  const CardOutstanding({super.key});
+  Organization? out;
+  var money = NumberFormat('#,###,000');
+  var f = NumberFormat("###.#", "en_US");
+  
+  CardOutstanding({
+    this.out,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
+    DateTime dt1 = DateTime.now();
+    DateTime dt2 = out!.day_start!;
+
+    Duration diff = dt1.difference(dt2);
+
     return Padding(
         padding: const EdgeInsets.only(left: 12),
         child: Card(
@@ -363,17 +414,16 @@ class CardOutstanding extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Stack(children: [
-                        const Positioned(
+                        Positioned(
                             child: TransparentImageCard(
                           borderRadius: 0,
                           width: double.infinity,
                           height: 150,
-                          imageProvider: NetworkImage(
-                              'https://wallpapercave.com/wp/wp9601168.jpg'),
+                          imageProvider: NetworkImage(out!.o_image!),
                         )),
                         Positioned(
                             top: 10,
-                            left: 15,
+                            left: 10,
                             child: Container(
                                 alignment: Alignment.center,
                                 decoration: BoxDecoration(
@@ -381,27 +431,31 @@ class CardOutstanding extends StatelessWidget {
                                     color: Colors.white),
                                 width: 65,
                                 height: 22,
-                                child: const Text('14 day'))),
-                        const Positioned(
+                                child: Text("${diff.inDays} days"),),),
+                        Positioned(
                             bottom: 18,
-                            left: 15,
+                            left: 10,
                             child: Row(
                               children: [
-                                CircleAvatar(
-                                  backgroundImage: NetworkImage(
-                                      'https://ih1.redbubble.net/image.3884071365.1013/st,small,507x507-pad,600x600,f8f8f8.jpg'),
-                                  radius: 20,
-                                ),
-                                SizedBox(width: 10),
+                                out!.avt == null
+                                    ? const CircleAvatar(
+                                        backgroundImage: NetworkImage(
+                                            'https://www.logolynx.com/images/logolynx/b4/b4ef8b89b08d503b37f526bca624c19a.jpeg'),
+                                        radius: 20)
+                                    : CircleAvatar(
+                                        backgroundImage:
+                                            NetworkImage(out!.avt!),
+                                        radius: 20),
+                                const SizedBox(width: 10),
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text('Name of account',
-                                        style: TextStyle(
+                                    Text(out!.name!,
+                                        style: const TextStyle(
                                             color: Colors.white, fontSize: 15)),
                                     Text(
-                                      '@username',
-                                      style: TextStyle(color: Colors.grey),
+                                      '@${out!.username!}',
+                                      style: const TextStyle(color: Colors.grey),
                                     )
                                   ],
                                 )
@@ -412,43 +466,46 @@ class CardOutstanding extends StatelessWidget {
                       Container(
                           padding: const EdgeInsets.only(left: 15),
                           width: 270,
-                          child: const Text(
-                            "It's not how much we give but how much love we put into giving",
-                            style: TextStyle(
+                          child: Text(
+                            out!.o_name!,
+                            style: const TextStyle(
                                 fontSize: 17, fontWeight: FontWeight.bold),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           )),
-                      const Padding(
+                      Padding(
                           padding:
-                              EdgeInsets.only(left: 15, top: 10, right: 15),
+                              const EdgeInsets.only(left: 15, top: 10, right: 15),
                           child: CustomAchieved(
-                            money: '123.456.789 VND',
+                            money: '${money.format(out!.current)} USD',
                             fontSizeM: 19,
-                            number: '13%',
+                            number:
+                                '${f.format(out!.current! / out!.target! * 100)}%',
                             fontSizeN: 17,
                           )),
                       Padding(
                           padding:
-                              EdgeInsets.only(left: 15, top: 10, right: 15),
+                              const EdgeInsets.only(left: 15, top: 10, right: 15),
                           child: CustomLineBar(
                               width: double.infinity,
                               height: 10,
-                              number: 0.13,
+                              number: out!.current! / out!.target!,
                               color: Colors.grey.withOpacity(0.15))),
                       Padding(
-                          padding: const EdgeInsets.only(
-                              left: 15, top: 15, right: 15),
-                          child: ButtonOutline(
-                              onPressed: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => DonatePage()));
-                              },
-                              text: 'Donate',
-                              height: 30,
-                              width: double.infinity))
+                        padding:
+                            const EdgeInsets.only(left: 15, top: 15, right: 15),
+                        child: ButtonOutline(
+                            onPressed: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => const DonatePage()));
+                            },
+                            text: 'Donate',
+                            height: 30,
+                            width: double.infinity),
+                      ),
+                      
                     ])),
           ),
         ));
@@ -507,7 +564,9 @@ class _CardCampaignState extends State<CardCampaign> {
                                         context,
                                         MaterialPageRoute(
                                             builder: (context) =>
-                                                AccountDetails(idA: null,)));
+                                                const AccountDetails(
+                                                  idA: null,
+                                                )));
                                   },
                                 style: const TextStyle(
                                   fontSize: 15,
@@ -738,7 +797,7 @@ class _CardDonateState extends State<CardDonate> {
                           fontSizeN: 17,
                         )),
                     Padding(
-                        padding: EdgeInsets.only(left: 15, top: 10, right: 15),
+                        padding: const EdgeInsets.only(left: 15, top: 10, right: 15),
                         child: CustomLineBar(
                           width: double.infinity,
                           height: 10,
@@ -754,7 +813,7 @@ class _CardDonateState extends State<CardDonate> {
                                 Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                        builder: (context) => DonatePage()));
+                                        builder: (context) => const DonatePage()));
                               },
                               text: 'Donate',
                               height: 40,
@@ -815,8 +874,12 @@ class CardOrganization extends StatelessWidget {
           child: InkWell(
             splashColor: Colors.white,
             onTap: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => AccountDetails(idA: null,)));
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const AccountDetails(
+                            idA: null,
+                          )));
             },
             child: Container(
                 width: 220,
@@ -861,7 +924,7 @@ class CardOrganization extends StatelessWidget {
                                 Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                        builder: (context) => DonatePage()));
+                                        builder: (context) => const DonatePage()));
                               },
                               text: 'Donate',
                               height: 30,
