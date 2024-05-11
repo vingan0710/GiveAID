@@ -132,7 +132,7 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
                                         context,
                                         MaterialPageRoute(
                                             builder: (context) =>
-                                                const CampaignDetails()));
+                                                const CampaignDetails(idOrg: null,)));
                                   },
                                   child: Container(
                                       width: double.infinity,

@@ -404,7 +404,7 @@ class CardOutstanding extends StatelessWidget {
               Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => const CampaignDetails()));
+                      builder: (context) => CampaignDetails(idOrg: out!.id)));
             },
             child: Container(
                 width: 280,
@@ -587,7 +587,7 @@ class _CardCampaignState extends State<CardCampaign> {
                                               context,
                                               MaterialPageRoute(
                                                   builder: (context) =>
-                                                      const CampaignDetails()));
+                                                       CampaignDetails(idOrg: null,)));
                                         },
                                       style: const TextStyle(
                                         fontSize: 15,
@@ -751,7 +751,7 @@ class _CardDonateState extends State<CardDonate> {
             Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => const CampaignDetails()));
+                    builder: (context) => const CampaignDetails(idOrg: null,)));
           },
           child: Container(
               width: double.infinity,

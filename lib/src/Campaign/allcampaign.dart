@@ -102,7 +102,7 @@ class _AllCampaignState extends State<AllCampaign> {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => const CampaignDetails()));
+                                builder: (context) => const CampaignDetails(idOrg: null,)));
                       },
                       child: Container(
                           width: double.infinity,

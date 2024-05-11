@@ -11,7 +11,7 @@ import 'package:url_launcher/link.dart';
 
 class AccountDetails extends StatefulWidget {
   final idA;
-  const AccountDetails({Key? key, required this.idA}) : super(key: key);
+  const AccountDetails({super.key, required this.idA});
 
   @override
   State<AccountDetails> createState() => _AccountDetailsState();
