@@ -1,9 +1,10 @@
 import 'package:GiveAID/API/api_services.dart';
-import 'package:GiveAID/main.dart';
+import 'package:GiveAID/src/Campaign/campaigndetails.dart';
 import 'package:GiveAID/src/Components/custombutton.dart';
 import 'package:GiveAID/src/Components/customlinebar.dart';
 import 'package:flutter/material.dart';
 import 'package:image_card/image_card.dart';
+import 'package:intl/intl.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:top_snackbar_flutter/custom_snack_bar.dart';
 import 'package:top_snackbar_flutter/top_snack_bar.dart';
@@ -25,57 +26,29 @@ class _AccountDetailsState extends State<AccountDetails> {
     return Scaffold(
         body: Stack(children: [
       FutureBuilder(
-          future: APIServices().fetchAccountDetails(widget.idA),
+          future: APIServices().fetchAccountOrganizationGallery(widget.idA),
           builder: (context, snapshot) {
             if (snapshot.hasData) {
-              var num1 = snapshot.data!.follower;
-              var num2 = snapshot.data!.like;
-              var num3 = snapshot.data!.support;
-              String k_m_b_generator_num1(num1) {
-                if (num1 > 999 && num1 < 99999) {
-                  return "${(num1 / 1000).toStringAsFixed(1)} K";
-                } else if (num1 > 99999 && num1 < 999999) {
-                  return "${(num1 / 1000).toStringAsFixed(0)} K";
-                } else if (num1 > 999999 && num1 < 999999999) {
-                  return "${(num1 / 1000000).toStringAsFixed(1)} M";
-                } else if (num1 > 999999999) {
-                  return "${(num1 / 1000000000).toStringAsFixed(1)} B";
+              var money = NumberFormat('#,###,000');
+              var f = NumberFormat("###.#", "en_US");
+
+              String k_m_b_generator_num(num) {
+                if (num > 999 && num < 99999) {
+                  return "${(num / 1000).toStringAsFixed(1)} K";
+                } else if (num > 99999 && num < 999999) {
+                  return "${(num / 1000).toStringAsFixed(0)} K";
+                } else if (num > 999999 && num < 999999999) {
+                  return "${(num / 1000000).toStringAsFixed(1)} M";
+                } else if (num > 999999999) {
+                  return "${(num / 1000000000).toStringAsFixed(1)} B";
                 } else {
-                  return num1.toString();
+                  return num.toString();
                 }
               }
 
-              String k_m_b_generator_num2(num2) {
-                if (num2 > 999 && num2 < 99999) {
-                  return "${(num2 / 1000).toStringAsFixed(1)} K";
-                } else if (num2 > 99999 && num2 < 999999) {
-                  return "${(num2 / 1000).toStringAsFixed(0)} K";
-                } else if (num2 > 999999 && num2 < 999999999) {
-                  return "${(num2 / 1000000).toStringAsFixed(1)} M";
-                } else if (num2 > 999999999) {
-                  return "${(num2 / 1000000000).toStringAsFixed(1)} B";
-                } else {
-                  return num2.toString();
-                }
-              }
-
-              String k_m_b_generator_num3(num3) {
-                if (num3 > 999 && num3 < 99999) {
-                  return "${(num3 / 1000).toStringAsFixed(1)} K";
-                } else if (num3 > 99999 && num3 < 999999) {
-                  return "${(num3 / 1000).toStringAsFixed(0)} K";
-                } else if (num3 > 999999 && num3 < 999999999) {
-                  return "${(num3 / 1000000).toStringAsFixed(1)} M";
-                } else if (num3 > 999999999) {
-                  return "${(num3 / 1000000000).toStringAsFixed(1)} B";
-                } else {
-                  return num3.toString();
-                }
-              }
-
-              var follower = k_m_b_generator_num1(num1);
-              var like = k_m_b_generator_num1(num2);
-              var support = k_m_b_generator_num1(num3);
+              var follower = k_m_b_generator_num(snapshot.data!.follower);
+              var like = k_m_b_generator_num(snapshot.data!.like);
+              var support = k_m_b_generator_num(snapshot.data!.support);
 
               return Positioned.fill(
                   child: SingleChildScrollView(
@@ -92,26 +65,26 @@ class _AccountDetailsState extends State<AccountDetails> {
                         left: 105,
                         child: Column(children: [
                           CircleAvatar(
-                              radius: 78,
-                              backgroundColor:
-                                  const Color.fromARGB(255, 255, 111, 15),
-                              child: snapshot.data!.avt == null
-                                  ? const CircleAvatar(
-                                      backgroundImage: NetworkImage(
-                                          'https://www.logolynx.com/images/logolynx/b4/b4ef8b89b08d503b37f526bca624c19a.jpeg'),
-                                      radius: 75,
-                                    )
-                                  : CircleAvatar(
-                                      backgroundImage:
-                                          NetworkImage('${snapshot.data!.avt}'),
-                                      radius: 75,
-                                    )),
+                            radius: 78,
+                            backgroundColor:
+                                const Color.fromARGB(255, 255, 111, 15),
+                            child: snapshot.data!.avt == null
+                                ? const CircleAvatar(
+                                    backgroundImage: NetworkImage(
+                                        'https://www.logolynx.com/images/logolynx/b4/b4ef8b89b08d503b37f526bca624c19a.jpeg'),
+                                    radius: 75,
+                                  )
+                                : CircleAvatar(
+                                    backgroundImage:
+                                        NetworkImage('${snapshot.data!.avt}'),
+                                    radius: 75),
+                          ),
                           Padding(
-                              padding: const EdgeInsets.only(top: 15),
-                              child: Text('${snapshot.data!.name}',
-                                  style: const TextStyle(
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.bold))),
+                            padding: const EdgeInsets.only(top: 15),
+                            child: Text('${snapshot.data!.name}',
+                                style: const TextStyle(
+                                    fontSize: 22, fontWeight: FontWeight.bold)),
+                          ),
                           Padding(
                             padding: const EdgeInsets.only(bottom: 2),
                             child: Text('@${snapshot.data!.username}',
@@ -320,30 +293,29 @@ class _AccountDetailsState extends State<AccountDetails> {
                               onPressed: () {},
                             ))),
                     Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(5),
-                              color: Colors.grey.shade200,
-                            ),
-                            width: 40,
-                            height: 40,
-                            alignment: Alignment.center,
-                            child: IconButton(
-                              icon: Image.asset(
-                                  'images/assets/icon/share-network-256.webp',
-                                  width: 20,
-                                  height: 20,
-                                  fit: BoxFit.cover,
-                                  color:
-                                      const Color.fromARGB(255, 255, 111, 15)),
-                              onPressed: () {},
-                            ))),
+                      padding: const EdgeInsets.only(right: 8),
+                      child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(5),
+                            color: Colors.grey.shade200,
+                          ),
+                          width: 40,
+                          height: 40,
+                          alignment: Alignment.center,
+                          child: IconButton(
+                            icon: Image.asset(
+                                'images/assets/icon/share-network-256.webp',
+                                width: 20,
+                                height: 20,
+                                fit: BoxFit.cover,
+                                color: const Color.fromARGB(255, 255, 111, 15)),
+                            onPressed: () {},
+                          )),
+                    ),
                     Container(
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(5),
-                          color: Colors.grey.shade200,
-                        ),
+                            borderRadius: BorderRadius.circular(5),
+                            color: Colors.grey.shade200),
                         width: 40,
                         height: 40,
                         alignment: Alignment.center,
@@ -358,52 +330,53 @@ class _AccountDetailsState extends State<AccountDetails> {
                   ]),
                   const SizedBox(height: 30),
                   IntrinsicHeight(
-                      child: Padding(
-                          padding: const EdgeInsets.only(left: 18, right: 15),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: [
-                              Column(children: [
-                                Text(follower,
-                                    style: const TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold)),
-                                const SizedBox(height: 3),
-                                const Text('Followers',
-                                    style: TextStyle(
-                                        fontSize: 15, color: Colors.black54))
-                              ]),
-                              VerticalDivider(
-                                  color: Colors.grey.shade300, width: 45),
-                              Column(children: [
-                                Text(like,
-                                    style: const TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold)),
-                                const SizedBox(height: 3),
-                                const Text('Favorites',
-                                    style: TextStyle(
-                                        fontSize: 15, color: Colors.black54))
-                              ]),
-                              VerticalDivider(
-                                  color: Colors.grey.shade300, width: 45),
-                              Column(children: [
-                                Text(support,
-                                    style: const TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold)),
-                                const SizedBox(height: 3),
-                                const Text('Supports',
-                                    style: TextStyle(
-                                        fontSize: 15, color: Colors.black54))
-                              ]),
-                            ],
-                          ))),
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 18, right: 15),
+                      child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            Column(children: [
+                              Text(follower,
+                                  style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold)),
+                              const SizedBox(height: 3),
+                              const Text('Followers',
+                                  style: TextStyle(
+                                      fontSize: 15, color: Colors.black54))
+                            ]),
+                            VerticalDivider(
+                                color: Colors.grey.shade300, width: 45),
+                            Column(children: [
+                              Text(like,
+                                  style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold)),
+                              const SizedBox(height: 3),
+                              const Text('Favorites',
+                                  style: TextStyle(
+                                      fontSize: 15, color: Colors.black54))
+                            ]),
+                            VerticalDivider(
+                                color: Colors.grey.shade300, width: 45),
+                            Column(children: [
+                              Text(support,
+                                  style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold)),
+                              const SizedBox(height: 3),
+                              const Text('Supports',
+                                  style: TextStyle(
+                                      fontSize: 15, color: Colors.black54))
+                            ]),
+                          ]),
+                    ),
+                  ),
                   Divider(
                       thickness: 7, color: Colors.grey.shade200, height: 50),
                   Padding(
-                      padding: const EdgeInsets.only(left: 20, right: 15),
-                      child: Row(
+                    padding: const EdgeInsets.only(left: 20, right: 15),
+                    child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           const Text('Fundraising campaign',
@@ -417,129 +390,175 @@ class _AccountDetailsState extends State<AccountDetails> {
                                     color: Color.fromARGB(255, 255, 111, 15),
                                     fontSize: 15),
                               ))
-                        ],
-                      )),
-                  Padding(
-                      padding: const EdgeInsets.only(left: 15, right: 15),
-                      child: Card(
-                        clipBehavior: Clip.hardEdge,
-                        child: InkWell(
-                          splashColor: Colors.white,
-                          onTap: () {},
-                          child: Stack(children: [
-                            const Positioned(
-                                child: TransparentImageCard(
-                              borderRadius: 0,
-                              width: double.infinity,
-                              height: 285,
-                              imageProvider: NetworkImage(
-                                  'https://wallpaperaccess.com/full/8712811.jpg'),
-                            )),
-                            Positioned(
-                                top: 15,
-                                left: 15,
-                                child: Container(
-                                    alignment: Alignment.center,
-                                    decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(50),
-                                        color: Colors.white),
-                                    width: 65,
-                                    height: 22,
-                                    child: const Text('14 day'))),
-                            Positioned(
-                                bottom: 18,
-                                left: 15,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const SizedBox(
-                                      width: 340,
-                                      child: Text(
-                                          'Lorem Ipsum is simply dummy text of the printing and typesetting industry. ',
-                                          style: TextStyle(
-                                              overflow: TextOverflow.clip,
-                                              color: Colors.white,
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold)),
-                                    ),
-                                    const SizedBox(height: 10),
-                                    Row(children: [
-                                      CustomLineBar(
-                                          width: 300,
-                                          height: 7.5,
-                                          number: 0.19,
-                                          color: Colors.grey.withOpacity(0.5)),
-                                      const SizedBox(width: 10),
-                                      const Text(
-                                        '19%',
-                                        style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.bold),
-                                      )
-                                    ]),
-                                    const SizedBox(height: 10),
-                                    const Row(
-                                        mainAxisSize: MainAxisSize.min,
+                        ]),
+                  ),
+                  Container(
+                    width: double.infinity,
+                    height: 293,
+                    padding: const EdgeInsets.only(right: 12),
+                    child:
+                        ListView(scrollDirection: Axis.horizontal, children: [
+                      for (var item in snapshot.data!.getOrganizations())
+                        Padding(
+                            padding: const EdgeInsets.only(left: 15),
+                            child: Card(
+                              clipBehavior: Clip.hardEdge,
+                              child: InkWell(
+                                  splashColor: Colors.white,
+                                  onTap: () {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                CampaignDetails(
+                                                    idOrg: item.id)));
+                                  },
+                                  child: SizedBox(
+                                      width: 375,
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
                                         children: [
-                                          Text('Achieved ',
-                                              style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 15)),
-                                          Text('123.456 ',
-                                              style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 15,
-                                                  fontWeight: FontWeight.bold)),
-                                          Text('/123.456.789 VND ',
-                                              style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 15)),
-                                        ]),
-                                  ],
-                                )),
-                          ]),
-                        ),
-                      )),
+                                          Stack(children: [
+                                            Positioned(
+                                              child: TransparentImageCard(
+                                                borderRadius: 0,
+                                                width: double.infinity,
+                                                height: 285,
+                                                imageProvider: NetworkImage(
+                                                    '${item.o_image}'),
+                                              ),
+                                            ),
+                                            Positioned(
+                                              top: 15,
+                                              left: 15,
+                                              child: Container(
+                                                alignment: Alignment.center,
+                                                decoration: BoxDecoration(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            50),
+                                                    color: Colors.white),
+                                                width: 65,
+                                                height: 22,
+                                                child: const Text('14 day'),
+                                              ),
+                                            ),
+                                            Positioned(
+                                                bottom: 18,
+                                                left: 15,
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    SizedBox(
+                                                      width: 340,
+                                                      child: Text(
+                                                        '${item.o_name}',
+                                                        style: const TextStyle(
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .clip,
+                                                            color: Colors.white,
+                                                            fontSize: 16,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold),
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 10),
+                                                    Row(children: [
+                                                      CustomLineBar(
+                                                        width: 320,
+                                                        height: 7.5,
+                                                        number: item.current! /
+                                                            item.target!,
+                                                        color: Colors.grey
+                                                            .withOpacity(0.5),
+                                                      ),
+                                                      const SizedBox(width: 10),
+                                                      Text(
+                                                        '${f.format(item.current! / item.target! * 100)}%',
+                                                        style: const TextStyle(
+                                                            color: Colors.white,
+                                                            fontSize: 12,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold),
+                                                      )
+                                                    ]),
+                                                    const SizedBox(height: 10),
+                                                    Row(
+                                                        mainAxisSize:
+                                                            MainAxisSize.min,
+                                                        children: [
+                                                          const Text(
+                                                              'Achieved ',
+                                                              style: TextStyle(
+                                                                  color: Colors
+                                                                      .white,
+                                                                  fontSize:
+                                                                      15)),
+                                                          Text(
+                                                              money.format(
+                                                                  item.current),
+                                                              style: const TextStyle(
+                                                                  color: Colors
+                                                                      .white,
+                                                                  fontSize: 15,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold)),
+                                                          Text(
+                                                              ' / ${money.format(item.target)} USD ',
+                                                              style: const TextStyle(
+                                                                  color: Colors
+                                                                      .white,
+                                                                  fontSize:
+                                                                      15)),
+                                                        ]),
+                                                  ],
+                                                )),
+                                          ]),
+                                        ],
+                                      ))),
+                            )),
+                    ]),
+                  ),
                   Divider(
                       thickness: 7, color: Colors.grey.shade200, height: 50),
                   Padding(
-                      padding: const EdgeInsets.only(left: 15, right: 15),
-                      child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text('Image/Video',
+                    padding: const EdgeInsets.only(left: 15, right: 15),
+                    child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text('Image',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 18)),
+                          TextButton(
+                              onPressed: () {},
+                              child: const Text(
+                                'View All',
                                 style: TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 18)),
-                            TextButton(
-                                onPressed: () {},
-                                child: const Text(
-                                  'View All',
-                                  style: TextStyle(
-                                      color: Color.fromARGB(255, 255, 111, 15),
-                                      fontSize: 15),
-                                ))
-                          ])),
-                  SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Wrap(
-                          direction: Axis.horizontal,
-                          children: List.generate(
-                              10,
-                              (index) => Padding(
-                                  padding: const EdgeInsets.only(left: 15),
-                                  child: GestureDetector(
-                                      onTap: () {},
-                                      child: Container(
-                                          height: 85,
-                                          width: 85,
-                                          decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(15),
-                                              image: const DecorationImage(
-                                                  image: NetworkImage(
-                                                      'https://img.wattpad.com/story_parts/1152211050/images/16b5ce795a38845e420318233362.jpg'),
-                                                  fit: BoxFit.cover)))))))),
+                                    color: Color.fromARGB(255, 255, 111, 15),
+                                    fontSize: 15),
+                              ))
+                        ]),
+                  ),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 85,
+                    child:
+                        ListView(scrollDirection: Axis.horizontal, children: [
+                      for (var item in snapshot.data!.getGallery())
+                        Wrap(children: [
+                          CusImageButton(click: (){}, url: '${item.image}'),
+                          CusImageButton(click: (){}, url: '${item.image1}'),
+                          CusImageButton(click: (){}, url: '${item.image2}'),
+                        ]),
+                    ]),
+                  ),
+
                   Divider(
                       thickness: 7, color: Colors.grey.shade200, height: 50),
                   const Padding(
@@ -611,7 +630,7 @@ class _AccountDetailsState extends State<AccountDetails> {
                     ]),
                   ),
                   const SizedBox(height: 15),
-                  const CardCampaign(),
+                  //CardCampaign(gal: ,),
                   Container(height: 65)
                 ]),
               ));

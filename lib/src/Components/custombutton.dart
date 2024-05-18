@@ -190,3 +190,27 @@ class CusIconButton extends StatelessWidget {
     );
   }
 }
+
+class CusImageButton extends StatelessWidget {
+  final Function click;
+  final String url;
+  const CusImageButton({super.key, required this.click, required this.url});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 12),
+      child: GestureDetector(
+        onTap: () => click(),
+        child: Container(
+          height: 85,
+          width: 85,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(15),
+            image: DecorationImage(image: NetworkImage(url), fit: BoxFit.cover),
+          ),
+        ),
+      ),
+    );
+  }
+}

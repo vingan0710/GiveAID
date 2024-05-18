@@ -1,4 +1,4 @@
-class Organization {
+class Organizations {
   int? id;
   String? o_name;
   String? o_description;
@@ -16,7 +16,7 @@ class Organization {
   String? username;
   String? avt;
   String? name;
-  Organization(
+  Organizations(
       {this.id,
       this.o_name,
       this.o_description,
@@ -34,7 +34,7 @@ class Organization {
       this.avt,
       this.name});
 
-  Organization.fromJson(Map<String, dynamic> json) {
+  Organizations.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     o_name = json['o_name'];
     o_description = json['o_description'];

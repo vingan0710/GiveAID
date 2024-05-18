@@ -1,7 +1,10 @@
+// ignore_for_file: must_be_immutable
+
 import 'dart:io';
 
 import 'package:GiveAID/API/api_services.dart';
 import 'package:GiveAID/Models/account.dart';
+import 'package:GiveAID/Models/gallery.dart';
 import 'package:GiveAID/Models/organization.dart';
 import 'package:GiveAID/src/Account/accountdetails.dart';
 import 'package:GiveAID/src/Account/allaccount.dart';
@@ -107,6 +110,9 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  Future<List<Organizations>> orgList = APIServices().fetchOrganization();
+  Future<List<Galleries>> galList = APIServices().fetchGallery();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -122,8 +128,10 @@ class _MyHomePageState extends State<MyHomePage> {
         actions: [
           IconButton(
               onPressed: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => const SearchPage()));
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const SearchPage()));
               },
               icon: const Icon(
                 Icons.search,
@@ -229,7 +237,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                             child: Text(
                                               '${accList[index].name}',
                                               overflow: TextOverflow.ellipsis,
-                                              style: const TextStyle(fontSize: 15),
+                                              style:
+                                                  const TextStyle(fontSize: 15),
                                             ))
                                       ]));
                                 });
@@ -287,18 +296,20 @@ class _MyHomePageState extends State<MyHomePage> {
                     onEndOfPage: () => _loadMoreHorizontal(),
                     child: Scrollbar(
                       thickness: 0,
-                      child: FutureBuilder<List<Organization>>(
-                        future: APIServices().fetchOrganizationOutstanding(),
+                      child: FutureBuilder<List<Organizations>>(
+                        future: APIServices().fetchOrganization(),
                         builder: (context, snapshot) {
                           if (snapshot.hasData) {
-                            List<Organization>? outList = snapshot.data;
+                            List<Organizations>? outList = snapshot.data;
                             return ListView.builder(
-                                // shrinkWrap: true,
                                 scrollDirection: Axis.horizontal,
-                                // physics: const NeverScrollableScrollPhysics(),
                                 itemCount: outList!.length,
                                 itemBuilder: (BuildContext context, int index) {
-                                  return CardOutstanding(out: outList[index]);
+                                  if (outList[index].outstanding == true) {
+                                    return CardOutstanding(out: outList[index]);
+                                  } else {
+                                    return Container();
+                                  }
                                 });
                           } else if (snapshot.hasError) {
                             return Text('${snapshot.error}');
@@ -315,47 +326,113 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
                 Divider(
                     color: Colors.grey.shade300, thickness: 5.5, height: 30),
-                const SingleChildScrollView(
-                    scrollDirection: Axis.vertical,
-                    child: Column(
-                      children: [CardCampaign(), CardDonate()],
-                    )),
-                Divider(color: Colors.grey.shade300, thickness: 5, height: 30),
-                Padding(
-                    padding: const EdgeInsets.only(left: 15, right: 15),
-                    child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                FutureBuilder(
+                  future: Future.wait([orgList, galList]),
+                  builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
+                    if (snapshot.hasData) {
+                      List<Organizations> orgList = snapshot.data![0];
+                      List<Galleries> galList = snapshot.data![1];
+                      return Column(
                         children: [
-                          Row(mainAxisSize: MainAxisSize.min, children: [
-                            Image.asset('images/assets/icon/people-256.webp',
-                                width: 18,
-                                height: 18,
-                                color: const Color.fromARGB(255, 255, 111, 15)),
-                            const Text(' Notable fundraising organization',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 18))
-                          ]),
-                          TextButton(
-                              onPressed: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            const NotableOrgazation()));
-                              },
-                              child: const Text(
-                                'View All',
-                                style: TextStyle(
-                                    color: Color.fromARGB(255, 255, 111, 15),
-                                    fontSize: 15),
-                              ))
-                        ])),
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Wrap(
-                      direction: Axis.horizontal,
-                      children: List.generate(
-                          10, (index) => const CardOrganization())),
+                          ListView.builder(
+                              shrinkWrap: true,
+                              scrollDirection: Axis.vertical,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: galList.length,
+                              itemBuilder: (BuildContext context, int index) {
+                                return CardCampaign(gal: galList[index]);
+                              }),
+                          ListView.builder(
+                              shrinkWrap: true,
+                              scrollDirection: Axis.vertical,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: orgList.length,
+                              itemBuilder: (BuildContext context, int index) {
+                                if (orgList[index].outstanding == false) {
+                                  return CardDonate(org: orgList[index]);
+                                } else {
+                                  return Container();
+                                }
+                              }),
+                        ],
+                      );
+                    } else if (snapshot.hasError) {
+                      return Text('${snapshot.error}');
+                    }
+                    return Center(
+                        child: LoadingAnimationWidget.threeArchedCircle(
+                      color: Colors.blue.shade300,
+                      size: 45,
+                    ));
+                  },
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 15, right: 15),
+                  child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(mainAxisSize: MainAxisSize.min, children: [
+                          Image.asset('images/assets/icon/people-256.webp',
+                              width: 18,
+                              height: 18,
+                              color: const Color.fromARGB(255, 255, 111, 15)),
+                          const Text(' Notable fundraising organization',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 18))
+                        ]),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        const NotableOrgazation()));
+                          },
+                          child: const Text('View All',
+                              style: TextStyle(
+                                  color: Color.fromARGB(255, 255, 111, 15),
+                                  fontSize: 15)),
+                        )
+                      ]),
+                ),
+                Container(
+                  width: double.infinity,
+                  height: 238,
+                  padding: const EdgeInsets.only(right: 12),
+                  child: LazyLoadScrollView(
+                    isLoading: isLoadingHorizontal,
+                    scrollDirection: Axis.horizontal,
+                    onEndOfPage: () => _loadMoreHorizontal(),
+                    child: Scrollbar(
+                      thickness: 0,
+                      child: FutureBuilder<List<Account>>(
+                        future: APIServices().fetchAccount(),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData) {
+                            List<Account>? accList = snapshot.data;
+                            return ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: accList!.length,
+                                itemBuilder: (BuildContext context, int index) {
+                                  if (accList[index].type_acc == true) {
+                                    return CardOrganization(
+                                        acc: accList[index]);
+                                  } else {
+                                    return Container();
+                                  }
+                                });
+                          } else if (snapshot.hasError) {
+                            return Text('${snapshot.error}');
+                          }
+                          return Center(
+                              child: LoadingAnimationWidget.threeArchedCircle(
+                            color: Colors.blue.shade300,
+                            size: 45,
+                          ));
+                        },
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -376,16 +453,12 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-// ignore: must_be_immutable
 class CardOutstanding extends StatelessWidget {
-  Organization? out;
+  Organizations? out;
   var money = NumberFormat('#,###,000');
   var f = NumberFormat("###.#", "en_US");
-  
-  CardOutstanding({
-    this.out,
-    super.key,
-  });
+
+  CardOutstanding({this.out, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -422,16 +495,18 @@ class CardOutstanding extends StatelessWidget {
                           imageProvider: NetworkImage(out!.o_image!),
                         )),
                         Positioned(
-                            top: 10,
-                            left: 10,
-                            child: Container(
-                                alignment: Alignment.center,
-                                decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(50),
-                                    color: Colors.white),
-                                width: 65,
-                                height: 22,
-                                child: Text("${diff.inDays} days"),),),
+                          top: 10,
+                          left: 10,
+                          child: Container(
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(50),
+                                color: Colors.white),
+                            width: 65,
+                            height: 22,
+                            child: Text("${diff.inDays} days"),
+                          ),
+                        ),
                         Positioned(
                             bottom: 18,
                             left: 10,
@@ -455,7 +530,8 @@ class CardOutstanding extends StatelessWidget {
                                             color: Colors.white, fontSize: 15)),
                                     Text(
                                       '@${out!.username!}',
-                                      style: const TextStyle(color: Colors.grey),
+                                      style:
+                                          const TextStyle(color: Colors.grey),
                                     )
                                   ],
                                 )
@@ -474,8 +550,8 @@ class CardOutstanding extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                           )),
                       Padding(
-                          padding:
-                              const EdgeInsets.only(left: 15, top: 10, right: 15),
+                          padding: const EdgeInsets.only(
+                              left: 15, top: 10, right: 15),
                           child: CustomAchieved(
                             money: '${money.format(out!.current)} USD',
                             fontSizeM: 19,
@@ -484,8 +560,8 @@ class CardOutstanding extends StatelessWidget {
                             fontSizeN: 17,
                           )),
                       Padding(
-                          padding:
-                              const EdgeInsets.only(left: 15, top: 10, right: 15),
+                          padding: const EdgeInsets.only(
+                              left: 15, top: 10, right: 15),
                           child: CustomLineBar(
                               width: double.infinity,
                               height: 10,
@@ -499,13 +575,13 @@ class CardOutstanding extends StatelessWidget {
                               Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                      builder: (context) => const DonatePage()));
+                                      builder: (context) =>
+                                          const DonatePage()));
                             },
                             text: 'Donate',
                             height: 30,
                             width: double.infinity),
                       ),
-                      
                     ])),
           ),
         ));
@@ -513,7 +589,9 @@ class CardOutstanding extends StatelessWidget {
 }
 
 class CardCampaign extends StatefulWidget {
-  const CardCampaign({super.key});
+  Galleries? gal;
+
+  CardCampaign({this.gal, super.key});
 
   @override
   State<CardCampaign> createState() => _CardCampaignState();
@@ -523,172 +601,199 @@ class _CardCampaignState extends State<CardCampaign> {
   bool isSelected = true;
   @override
   Widget build(BuildContext context) {
-    return Card(
-      clipBehavior: Clip.hardEdge,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(0),
-      ),
-      child: InkWell(
-        splashColor: Colors.white,
-        onTap: () {},
-        child: SizedBox(
-            width: double.infinity,
-            child:
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 10),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const CircleAvatar(
-                      backgroundImage: NetworkImage(
-                          'https://ih1.redbubble.net/image.3884071365.1013/st,small,507x507-pad,600x600,f8f8f8.jpg'),
-                      radius: 20,
-                    ),
-                    const SizedBox(width: 10),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SizedBox(
-                          width: 340,
-                          child: Wrap(
-                            direction: Axis.horizontal,
-                            alignment: WrapAlignment.start,
-                            children: [
-                              RichText(
-                                  text: TextSpan(
-                                text: 'Name of account ',
-                                recognizer: TapGestureRecognizer()
-                                  ..onTap = () {
-                                    Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) =>
-                                                const AccountDetails(
-                                                  idA: null,
-                                                )));
-                                  },
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                children: [
-                                  const TextSpan(
-                                      text: ' added 3 new images for the ',
-                                      style: TextStyle(
+    DateTime dt1 = DateTime.now();
+    DateTime dt2 = widget.gal!.created_at!;
+
+    Duration diff = dt1.difference(dt2);
+    return Column(
+      children: [
+        Card(
+          clipBehavior: Clip.hardEdge,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(0),
+          ),
+          child: InkWell(
+            splashColor: Colors.white,
+            onTap: () {},
+            child: SizedBox(
+                width: double.infinity,
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(left: 10),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            widget.gal!.avt == null
+                                ? const CircleAvatar(
+                                    backgroundImage: NetworkImage(
+                                        'https://www.logolynx.com/images/logolynx/b4/b4ef8b89b08d503b37f526bca624c19a.jpeg'),
+                                    radius: 20,
+                                  )
+                                : CircleAvatar(
+                                    backgroundImage:
+                                        NetworkImage('${widget.gal!.avt}'),
+                                    radius: 20,
+                                  ),
+                            const SizedBox(width: 10),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                SizedBox(
+                                  width: 340,
+                                  child: Wrap(
+                                    direction: Axis.horizontal,
+                                    alignment: WrapAlignment.start,
+                                    children: [
+                                      RichText(
+                                          text: TextSpan(
+                                        text: '${widget.gal!.name} ',
+                                        recognizer: TapGestureRecognizer()
+                                          ..onTap = () {
+                                            Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        AccountDetails(
+                                                            idA: widget.gal!
+                                                                .id_account)));
+                                          },
+                                        style: const TextStyle(
                                           fontSize: 15,
-                                          fontWeight: FontWeight.normal)),
-                                  TextSpan(
-                                      text: 'Name of campaign ',
-                                      recognizer: TapGestureRecognizer()
-                                        ..onTap = () {
-                                          Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                       CampaignDetails(idOrg: null,)));
-                                        },
-                                      style: const TextStyle(
-                                        fontSize: 15,
-                                        color: Colors.black,
-                                        fontWeight: FontWeight.bold,
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        children: [
+                                          const TextSpan(
+                                              text:
+                                                  ' added 3 new images for the ',
+                                              style: TextStyle(
+                                                  fontSize: 15,
+                                                  fontWeight:
+                                                      FontWeight.normal)),
+                                          TextSpan(
+                                              text: '${widget.gal!.o_name}',
+                                              recognizer: TapGestureRecognizer()
+                                                ..onTap = () {
+                                                  Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                          builder: (context) =>
+                                                              CampaignDetails(
+                                                                  idOrg: widget
+                                                                      .gal!
+                                                                      .program_id)));
+                                                },
+                                              style: const TextStyle(
+                                                fontSize: 15,
+                                                color: Colors.black,
+                                                fontWeight: FontWeight.bold,
+                                              )),
+                                          const TextSpan(
+                                              text: ' campaign',
+                                              style: TextStyle(
+                                                  fontSize: 15,
+                                                  fontWeight:
+                                                      FontWeight.normal)),
+                                        ],
                                       )),
-                                  const TextSpan(
-                                      text: ' campaign',
-                                      style: TextStyle(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.normal)),
-                                ],
-                              )),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 5),
+                                Text(
+                                  '${diff.inDays} days before',
+                                  style: const TextStyle(color: Colors.grey),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      Padding(
+                          padding: const EdgeInsets.all(8),
+                          child: ReadMoreText(
+                            "${widget.gal!.g_description}",
+                            style: const TextStyle(fontSize: 15),
+                            trimMode: TrimMode.Line,
+                            trimLines: 3,
+                            colorClickableText: Colors.grey.shade500,
+                            trimCollapsedText: 'View more',
+                            trimExpandedText: 'View less',
+                            moreStyle: TextStyle(
+                                fontSize: 15, color: Colors.grey.shade500),
+                          )),
+                      ImageSlideshow(
+                        width: double.infinity,
+                        height: 300,
+                        isLoop: false,
+                        initialPage: 0,
+                        indicatorColor: const Color.fromARGB(255, 255, 111, 15),
+                        indicatorBackgroundColor: Colors.grey,
+                        indicatorRadius: 4,
+                        children: [
+                          Image.network(
+                            '${widget.gal!.image}',
+                            fit: BoxFit.cover,
+                          ),
+                          Image.network(
+                            '${widget.gal!.image1}',
+                            fit: BoxFit.cover,
+                          ),
+                          Image.network(
+                            '${widget.gal!.image2}',
+                            fit: BoxFit.cover,
+                          ),
+                        ],
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              IconButton(
+                                icon: isSelected == true
+                                    ? const Icon(Icons.favorite_border_sharp)
+                                    : const Icon(Icons.favorite_sharp),
+                                iconSize: 25,
+                                color: Colors.black,
+                                onPressed: () {
+                                  setState(() {
+                                    isSelected = !isSelected;
+                                  });
+                                },
+                              ),
+                              IconButton(
+                                icon: Image.asset(
+                                    'images/assets/icon/7561933.png',
+                                    width: 20,
+                                    height: 20,
+                                    fit: BoxFit.cover),
+                                onPressed: () {},
+                              ),
                             ],
                           ),
-                        ),
-                        const SizedBox(height: 5),
-                        const Text(
-                          '... minute before',
-                          style: TextStyle(color: Colors.grey),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: ReadMoreText(
-                    "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
-                    style: const TextStyle(fontSize: 15),
-                    trimMode: TrimMode.Line,
-                    trimLines: 3,
-                    colorClickableText: Colors.grey.shade500,
-                    trimCollapsedText: 'View more',
-                    trimExpandedText: 'View less',
-                    moreStyle:
-                        TextStyle(fontSize: 15, color: Colors.grey.shade500),
-                  )),
-              ImageSlideshow(
-                width: double.infinity,
-                height: 300,
-                isLoop: false,
-                initialPage: 0,
-                indicatorColor: const Color.fromARGB(255, 255, 111, 15),
-                indicatorBackgroundColor: Colors.grey,
-                indicatorRadius: 4,
-                children: [
-                  Image.network(
-                    'https://i.pinimg.com/originals/44/21/ed/4421ed1a61043d664419920bac159697.jpg',
-                    fit: BoxFit.cover,
-                  ),
-                  Image.network(
-                    'https://i.pinimg.com/originals/13/d6/a4/13d6a41a687130e63cc54f62a1c8b08f.jpg',
-                    fit: BoxFit.cover,
-                  ),
-                  Image.network(
-                    'https://i.pinimg.com/originals/08/5f/4c/085f4cbbacbfb1b6cea9fa47f9ecb29b.png',
-                    fit: BoxFit.cover,
-                  ),
-                ],
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      IconButton(
-                        icon: isSelected == true
-                            ? const Icon(Icons.favorite_border_sharp)
-                            : const Icon(Icons.favorite_sharp),
-                        iconSize: 25,
-                        color: Colors.black,
-                        onPressed: () {
-                          setState(() {
-                            isSelected = !isSelected;
-                          });
-                        },
+                          IconButton(
+                            icon: Image.asset('images/assets/icon/13326643.png',
+                                width: 25, height: 25, fit: BoxFit.cover),
+                            onPressed: () {},
+                          ),
+                        ],
                       ),
-                      IconButton(
-                        icon: Image.asset('images/assets/icon/7561933.png',
-                            width: 20, height: 20, fit: BoxFit.cover),
-                        onPressed: () {},
-                      ),
-                    ],
-                  ),
-                  IconButton(
-                    icon: Image.asset('images/assets/icon/13326643.png',
-                        width: 25, height: 25, fit: BoxFit.cover),
-                    onPressed: () {},
-                  ),
-                ],
-              )
-            ])),
-      ),
+                    ])),
+          ),
+        ),
+        const Divider(),
+      ],
     );
   }
 }
 
 class CardDonate extends StatefulWidget {
-  const CardDonate({super.key});
+  Organizations? org;
+
+  CardDonate({this.org, super.key});
 
   @override
   State<CardDonate> createState() => _CardDonateState();
@@ -696,21 +801,32 @@ class CardDonate extends StatefulWidget {
 
 class _CardDonateState extends State<CardDonate> {
   bool isSelected = true;
+  var money = NumberFormat('#,###,000');
+  var f = NumberFormat("###.#", "en_US");
 
   @override
   Widget build(BuildContext context) {
+    DateTime dt1 = DateTime.now();
+    DateTime dt2 = widget.org!.day_start!;
+
+    Duration diff = dt1.difference(dt2);
     return Column(children: [
-      const Padding(
-        padding: EdgeInsets.only(top: 10, left: 12),
+      Padding(
+        padding: const EdgeInsets.only(top: 10, left: 12),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            CircleAvatar(
-              backgroundImage: NetworkImage(
-                  'https://ih1.redbubble.net/image.3884071365.1013/st,small,507x507-pad,600x600,f8f8f8.jpg'),
-              radius: 20,
-            ),
-            SizedBox(width: 10),
+            widget.org!.avt == null
+                ? const CircleAvatar(
+                    backgroundImage: NetworkImage(
+                        'https://www.logolynx.com/images/logolynx/b4/b4ef8b89b08d503b37f526bca624c19a.jpeg'),
+                    radius: 20,
+                  )
+                : CircleAvatar(
+                    backgroundImage: NetworkImage('${widget.org!.avt}'),
+                    radius: 20,
+                  ),
+            const SizedBox(width: 10),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -720,26 +836,43 @@ class _CardDonateState extends State<CardDonate> {
                     direction: Axis.horizontal,
                     alignment: WrapAlignment.start,
                     children: [
-                      Text(
-                        "Name of account ",
-                        style: TextStyle(
-                            fontSize: 15, fontWeight: FontWeight.bold),
-                      ),
-                      Text('is calling for support',
-                          style: TextStyle(fontSize: 15))
+                      RichText(
+                          text: TextSpan(
+                        text: '${widget.org!.name}',
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => AccountDetails(
+                                        idA: widget.org!.id_account)));
+                          },
+                        style: const TextStyle(
+                          fontSize: 15,
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        children: [
+                          const TextSpan(
+                              text: ' is calling for support',
+                              style: TextStyle(
+                                  fontSize: 15, fontWeight: FontWeight.normal)),
+                        ],
+                      )),
                     ],
                   ),
                 ),
-                SizedBox(height: 5),
+                const SizedBox(height: 5),
                 Text(
-                  '... minute before',
-                  style: TextStyle(color: Colors.grey),
+                  DateFormat.yMd().format(widget.org!.day_start!),
+                  style: const TextStyle(color: Colors.grey),
                 ),
               ],
             ),
           ],
         ),
       ),
+      const SizedBox(height: 5.5),
       Card(
         clipBehavior: Clip.hardEdge,
         shape: RoundedRectangleBorder(
@@ -751,7 +884,9 @@ class _CardDonateState extends State<CardDonate> {
             Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => const CampaignDetails(idOrg: null,)));
+                    builder: (context) => CampaignDetails(
+                          idOrg: widget.org!.id,
+                        )));
           },
           child: Container(
               width: double.infinity,
@@ -761,8 +896,7 @@ class _CardDonateState extends State<CardDonate> {
                   children: [
                     Stack(children: [
                       Positioned(
-                          child: Image.network(
-                              'https://i.pinimg.com/originals/44/21/ed/4421ed1a61043d664419920bac159697.jpg',
+                          child: Image.network('${widget.org!.o_image}',
                               height: 280,
                               width: double.infinity,
                               fit: BoxFit.cover)),
@@ -776,32 +910,34 @@ class _CardDonateState extends State<CardDonate> {
                                   color: Colors.white),
                               width: 65,
                               height: 22,
-                              child: const Text('14 day')))
+                              child: Text('${diff.inDays} days')))
                     ]),
                     const SizedBox(height: 10),
                     Container(
                         padding: const EdgeInsets.only(left: 15, right: 10),
                         width: double.infinity,
-                        child: const Text(
-                          "It's not how much we give but how much love we put into giving",
+                        child: Text(
+                          "${widget.org!.o_name}",
                           style: TextStyle(fontSize: 17),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         )),
-                    const Padding(
+                    Padding(
                         padding: EdgeInsets.only(left: 15, top: 10, right: 15),
                         child: CustomAchieved(
-                          money: '123.456.789 VND',
+                          money: '${money.format(widget.org!.current)} USD',
                           fontSizeM: 19,
-                          number: '13%',
+                          number:
+                              '${f.format(widget.org!.current! / widget.org!.target! * 100)}%',
                           fontSizeN: 17,
                         )),
                     Padding(
-                        padding: const EdgeInsets.only(left: 15, top: 10, right: 15),
+                        padding:
+                            const EdgeInsets.only(left: 15, top: 10, right: 15),
                         child: CustomLineBar(
                           width: double.infinity,
                           height: 10,
-                          number: 0.13,
+                          number: widget.org!.current! / widget.org!.target!,
                           color: Colors.grey.withOpacity(0.15),
                         )),
                     Row(mainAxisAlignment: MainAxisAlignment.end, children: [
@@ -813,7 +949,8 @@ class _CardDonateState extends State<CardDonate> {
                                 Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                        builder: (context) => const DonatePage()));
+                                        builder: (context) =>
+                                            const DonatePage()));
                               },
                               text: 'Donate',
                               height: 40,
@@ -857,16 +994,52 @@ class _CardDonateState extends State<CardDonate> {
             onPressed: () {},
           ),
         ],
-      )
+      ),
+      Divider(color: Colors.grey.shade300, thickness: 5, height: 20),
     ]);
   }
 }
 
 class CardOrganization extends StatelessWidget {
-  const CardOrganization({super.key});
+  Account? acc;
+
+  CardOrganization({this.acc, super.key});
 
   @override
   Widget build(BuildContext context) {
+    var num1 = acc!.like;
+    var num2 = acc!.support;
+    String k_m_b_generator_num1(num1) {
+      if (num1 > 999 && num1 < 99999) {
+        return "${(num1 / 1000).toStringAsFixed(1)} K";
+      } else if (num1 > 99999 && num1 < 999999) {
+        return "${(num1 / 1000).toStringAsFixed(0)} K";
+      } else if (num1 > 999999 && num1 < 999999999) {
+        return "${(num1 / 1000000).toStringAsFixed(1)} M";
+      } else if (num1 > 999999999) {
+        return "${(num1 / 1000000000).toStringAsFixed(1)} B";
+      } else {
+        return num1.toString();
+      }
+    }
+
+    String k_m_b_generator_num2(num2) {
+      if (num2 > 999 && num2 < 99999) {
+        return "${(num2 / 1000).toStringAsFixed(1)} K";
+      } else if (num2 > 99999 && num2 < 999999) {
+        return "${(num2 / 1000).toStringAsFixed(0)} K";
+      } else if (num2 > 999999 && num2 < 999999999) {
+        return "${(num2 / 1000000).toStringAsFixed(1)} M";
+      } else if (num2 > 999999999) {
+        return "${(num2 / 1000000000).toStringAsFixed(1)} B";
+      } else {
+        return num2.toString();
+      }
+    }
+
+    var like = k_m_b_generator_num1(num1);
+    var support = k_m_b_generator_num1(num2);
+    
     return Padding(
         padding: const EdgeInsets.only(left: 12),
         child: Card(
@@ -877,8 +1050,8 @@ class CardOrganization extends StatelessWidget {
               Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => const AccountDetails(
-                            idA: null,
+                      builder: (context) => AccountDetails(
+                            idA: acc!.id,
                           )));
             },
             child: Container(
@@ -888,22 +1061,28 @@ class CardOrganization extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Padding(
-                          padding: EdgeInsets.only(top: 20),
-                          child: CircleAvatar(
-                            backgroundImage: NetworkImage(
-                                'https://th.bing.com/th?id=OIF.JqHEZWAGwYykgo%2bJa7Lp4Q&rs=1&pid=ImgDetMain'),
-                            radius: 40,
-                          )),
-                      const Padding(
+                      Padding(
+                        padding: EdgeInsets.only(top: 20),
+                        child: acc!.avt == null
+                            ? const CircleAvatar(
+                                backgroundImage: NetworkImage(
+                                    'https://www.logolynx.com/images/logolynx/b4/b4ef8b89b08d503b37f526bca624c19a.jpeg'),
+                                radius: 40,
+                              )
+                            : CircleAvatar(
+                                backgroundImage: NetworkImage('${acc!.avt}'),
+                                radius: 40,
+                              ),
+                      ),
+                      Padding(
                           padding: EdgeInsets.only(top: 10),
-                          child: Text('Name of organization',
+                          child: Text(acc!.name!,
                               style: TextStyle(
                                   fontSize: 15, fontWeight: FontWeight.bold))),
                       Padding(
                         padding: const EdgeInsets.only(top: 5),
                         child: Row(mainAxisSize: MainAxisSize.min, children: [
-                          const Text('72 favorites ',
+                          Text('$like favorites ',
                               style:
                                   TextStyle(fontSize: 15, color: Colors.grey)),
                           Image.asset(
@@ -911,7 +1090,7 @@ class CardOrganization extends StatelessWidget {
                               width: 5,
                               height: 5,
                               color: Colors.grey),
-                          const Text(' 1N upvotes',
+                          Text(' $support supports',
                               style:
                                   TextStyle(fontSize: 15, color: Colors.grey)),
                         ]),
@@ -924,7 +1103,8 @@ class CardOrganization extends StatelessWidget {
                                 Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                        builder: (context) => const DonatePage()));
+                                        builder: (context) =>
+                                            const DonatePage()));
                               },
                               text: 'Donate',
                               height: 30,

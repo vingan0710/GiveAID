@@ -30,7 +30,7 @@ class _CampaignDetailsState extends State<CampaignDetails> {
           future: APIServices().fetchOrgDetails(widget.idOrg),
           builder: (context, snapshot) {
             if (snapshot.hasData) {
-              Organization org = snapshot.data!;
+              Organizations org = snapshot.data!;
               DateTime dt1 = org.day_end!;
               DateTime dt2 = org.day_start!;
 
