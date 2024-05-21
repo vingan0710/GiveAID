@@ -2,6 +2,7 @@ import 'package:GiveAID/API/api_services.dart';
 import 'package:GiveAID/src/Campaign/campaigndetails.dart';
 import 'package:GiveAID/src/Components/custombutton.dart';
 import 'package:GiveAID/src/Components/customlinebar.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:image_card/image_card.dart';
 import 'package:intl/intl.dart';
@@ -552,9 +553,36 @@ class _AccountDetailsState extends State<AccountDetails> {
                         ListView(scrollDirection: Axis.horizontal, children: [
                       for (var item in snapshot.data!.getGallery())
                         Wrap(children: [
-                          CusImageButton(click: (){}, url: '${item.image}'),
-                          CusImageButton(click: (){}, url: '${item.image1}'),
-                          CusImageButton(click: (){}, url: '${item.image2}'),
+                          CusImageButton(
+                              click: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => DetailScreen(
+                                              image: item.image,
+                                            )));
+                              },
+                              url: '${item.image}'),
+                          CusImageButton(
+                              click: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => DetailScreen(
+                                              image: item.image1,
+                                            )));
+                              },
+                              url: '${item.image1}'),
+                          CusImageButton(
+                              click: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => DetailScreen(
+                                              image: item.image2,
+                                            )));
+                              },
+                              url: '${item.image2}'),
                         ]),
                     ]),
                   ),
@@ -675,5 +703,38 @@ class _AccountDetailsState extends State<AccountDetails> {
             ])),
       )
     ]));
+  }
+}
+
+class DetailScreen extends StatelessWidget {
+  String? image;
+
+  DetailScreen({this.image, super.key});
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        leading: IconButton(
+          icon: Icon(Icons.close,color: Colors.white,),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+      ),
+      body: Center(
+        child: Hero(
+          tag: 'imageHero',
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(15),
+            child: Image.network(
+              '$image',
+              fit: BoxFit.cover,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

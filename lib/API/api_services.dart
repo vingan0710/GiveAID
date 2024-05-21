@@ -10,7 +10,7 @@ import 'package:GiveAID/Models/organization.dart';
 import 'package:http/http.dart' as http;
 
 class APIServices {
-  var url = 'https://192.168.1.13:7001/api';
+  var url = 'https://192.168.1.15:7001/api';
 
   //ACCOUNTS
   Future<List<Account>> fetchAccount() async {
